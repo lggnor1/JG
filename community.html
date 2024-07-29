@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JG국가전쟁</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.8.0/firebase-firestore-compat.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-53xC43ChGweUmHfKAqulB1rpvkV637k",
+            authDomain: "jgwarr-c3b95.firebaseapp.com",
+            projectId: "jgwarr-c3b95",
+            storageBucket: "jgwarr-c3b95.appspot.com",
+            messagingSenderId: "744602775354",
+            appId: "1:744602775354:web:86566b193bd6a94974aa03",
+            measurementId: "G-J84XR6BYKE"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('postForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const postNickname = document.getElementById('postNickname').value;
+    const postTitle = document.getElementById('postTitle').value;
+    const postContent = document.getElementById('postContent').value;
+
+    try {
+        await addDoc(collection(db, 'posts'), {
+            nickname: postNickname,
+            title: postTitle,
+            content: postContent,
+            timestamp: serverTimestamp()
+        });
+        alert('글이 성공적으로 등록되었습니다.');
+        document.getElementById('postForm').reset();
+        modal.style.display = "none";
+        modal.classList.remove('show');
+    } catch (error) {
+        console.error('Error adding document: ', error); // 오류를 콘솔에 출력
+        alert('글 등록 중 오류가 발생했습니다: ' + error.message); // 오류 메시지를 사용자에게 보여줌
+    }
+});
+
+
+        // 게시물 가져오기 및 표시
+        const postsTable = document.getElementById('postsTable');
+        const postDetails = document.getElementById('postDetails');
+        const q = query(collection(db, 'posts'), orderBy('timestamp', 'asc')); // 오래된 순서로 정렬
+
+        onSnapshot(q, (snapshot) => {
+            postsTable.innerHTML = `
+                <thead>
+                    <tr>
+                        <th scope="col">번호</th>
+                        <th scope="col">제목</th>
+                        <th scope="col">글쓴이</th>
+                        <th scope="col">작성일</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+
+            const tbody = postsTable.querySelector('tbody');
+            let counter = 1; // 번호 카운터 초기화
+            tbody.innerHTML = ''; // 이전 항목 지우기
+
+            snapshot.forEach((doc) => {
+                const post = doc.data();
+                const postElement = document.createElement('tr');
+
+                // 제목을 클릭 가능하게 만들기
+                const titleElement = document.createElement('td');
+                titleElement.innerHTML = `<a href="#" class="post-title" data-id="${doc.id}">${post.title}</a>`;
+                postElement.innerHTML = `
+                    <th scope="row">${counter++}</th>
+                `;
+                postElement.appendChild(titleElement);
+                postElement.innerHTML += `
+                    <td>${post.nickname}</td>
+                    <td>${post.timestamp?.toDate().toLocaleString()}</td>
+                `;
+                tbody.appendChild(postElement);
+            });
+
+            // 제목 링크에 클릭 이벤트 추가
+            document.querySelectorAll('.post-title').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const postId = link.getAttribute('data-id');
+                    displayPostDetails(postId);
+                });
+            });
+        });
+
+        // 게시물 세부 정보 표시
+        async function displayPostDetails(postId) {
+            const docRef = doc(db, "posts", postId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const post = docSnap.data();
+                postDetails.innerHTML = `
+                    <h4>${post.title}</h4>
+                    <p>${post.nickname} | ${post.timestamp?.toDate().toLocaleString()}</p>
+                    <hr>
+                    <p>${post.content}</p>
+                `;
+                // 세부 정보 섹션으로 스크롤
+                postDetails.scrollIntoView({ behavior: "smooth" });
+            } else {
+                postDetails.innerHTML = '<p>포스트를 찾을 수 없습니다.</p>';
+            }
+        }
+    </script>
+    <style>
+        @media (max-width: 768px) {
+            .header {
+                background-size: cover;
+                background-position: center;
+                height: 400px;
+                /* 모바일 화면에서 높이 조정 */
+            }
+
+            a.nav-link {
+                color: #F17228;
+                font-size: 1.2em;
+                margin-right: 10px;
+            }
+
+            .post-button-container {
+                margin-top: 20px;
+            }
+        }
+
+        .nav-link {
+            color: #F17228;
+            font-size: 1.5em;
+            margin-right: 20px;
+        }
+
+        .GD {
+            color: darkblue;
+            font-size: 2em;
+            margin-right: 20px;
+        }
+
+        .container1 {
+            padding-bottom: 20px;
+            margin-bottom: 0px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            padding-bottom: 20px;
+            margin-bottom: 0px;
+            display: flex;
+            justify-content: space-between;
+            /* 로고를 오른쪽으로 정렬 */
+            align-items: center;
+            /* 세로 방향 가운데 정렬 */
+        }
+
+
+        .header {
+            background-size: cover;
+            /* 배경 이미지가 전체를 채우도록 설정 */
+            background-image: url('home.png');
+            background-position: center;
+            /* 중앙 정렬 */
+            height: 730px;
+            width: 100%;
+            /* 폭을 100%로 설정하여 화면에 맞게 조정 */
+            display: flex;
+            flex-direction: column;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+
+        .social-icons {
+            display: flex;
+            align-items: center;
+            margin-left: flex-end;
+        }
+
+        .social-icons a {
+            margin-left: 15px;
+            color: white;
+        }
+
+        .nav {
+            flex: 1;
+            /* 네비게이션 영역을 확장하여 가운데 정렬을 유지 */
+            justify-content: center;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #ccc;
+            margin: 20px 0;
+        }
+
+        .iconimg {
+            width: 100px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 60px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .post-button-container {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #postDetails {
+            margin-top: 20px;
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="p-3 text-bg-dark">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+                    <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap">
+                        <use xlink:href="#bootstrap"></use>
+                    </svg>
+                </a>
+                <img src="home.png" alt="IconImage" class="iconimg ms-3">
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="index.html" class="nav-link text-danger">홈</a></li>
+                    <li><a href="announcement.html" class="nav-link text-danger" style="color: #51040D;">공지</a></li>
+                    <li><a href="community.html" class="nav-link px-2">커뮤니티</a></li>
+                    <li><a href="make.html" class="nav-link px-2">제작법</a></li>
+                    <li><a href="discord.html" class="nav-link px-2">디스코드</a></li>
+                    <li><a href="kakao.html" class="nav-link px-2">카카오톡</a></li>
+                    <li><a href="server.html" class="nav-link px-2">서버</a></li>
+                </ul>
+            </div>
+            <div class="social-icons">
+                <a href="https://www.youtube.com/@Kuang3461" target="_blank">
+                    <img src="https://lh6.googleusercontent.com/proxy/Z7djY3G5KhdVi9qLrI4kpCw-cJj7tFLeY8ONjdfFvq8cjMNnqU0GClBaIYZ67fKLR5qhTisFWDQ7N19IewHDLMVENtAJEv26Z_FYM-tMoqhGmelvbL-UKZe6be_ZbwqJvEX1qic"
+                        alt="YouTube" style="width: 50px;">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <hr>
+
+    <div class="container1 container">
+        <!-- Table for displaying posts -->
+        <table class="table" id="postsTable">
+            <thead>
+                <tr>
+                    <th scope="col">번호</th>
+                    <th scope="col">제목</th>
+                    <th scope="col">글쓴이</th>
+                    <th scope="col">작성일</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div class="post-button-container">
+            <button class="btn btn-primary" id="openPostModal">글쓰기 ✏️</button>
+        </div>
+
+        <!-- Display post details -->
+        <div id="postDetails"></div>
+    </div>
+
+    <!-- Modal for creating posts -->
+    <div id="postModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="postForm">
+                <!-- <div class="mb-3">
+                    <label for="postPassword" class="form-label">비밀번호를 입력하세요.</label>
+                    <input type="password" class="form-control" id="postPassword" required>
+                </div> -->
+                <div class="mb-3">
+                    <label for="postNickname" class="form-label">닉네임을 입력하세요.</label>
+                    <input type="text" class="form-control" id="postNickname" required>
+                </div>
+                <div class="mb-3">
+                    <label for="postTitle" class="form-label">제목을 입력하세요.</label>
+                    <input type="text" class="form-control" id="postTitle" required>
+                </div>
+                <div class="mb-3">
+                    <label for="postContent" class="form-label">내용을 입력하세요.</label>
+                    <textarea class="form-control" id="postContent" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">등록</button>
+                <button type="button" class="btn btn-secondary" id="cancelPost">취소</button>
+            </form>
+        </div>
+    </div>
+
+    <hr>
+    <p><a href="copyright.html">©lgg_nor1</a></p>
+
+    <script>
+        // Get the modal
+        var modal = document.getElementById("postModal");
+        // Get the button that opens the modal
+        var btn = document.getElementById("openPostModal");
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+        // Get the cancel button
+        var cancelBtn = document.getElementById("cancelPost");
+        // When the user clicks the button, open the modal
+        btn.onclick = function() {
+            modal.style.display = "block";
+            modal.classList.add('show');
+        }
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+            modal.classList.remove('show');
+        }
+        // When the user clicks on cancel button, close the modal and navigate to announcement page
+        cancelBtn.onclick = function() {
+            modal.style.display = "none";
+            modal.classList.remove('show');
+            window.location.href = "announcement.html";
+        }
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+                modal.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+
+</html>
