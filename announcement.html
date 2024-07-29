@@ -144,7 +144,7 @@
                 font-size: 1.2em;
                 margin-right: 5px;
             }
-            
+
             .post-button-container {
                 margin-top: 20px;
             }
@@ -162,12 +162,22 @@
             margin-right: 20px;
         }
 
-        .container {
+        .container1 {
             padding-bottom: 20px;
             margin-bottom: 0px;
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        .container {
+            padding-bottom: 20px;
+            margin-bottom: 0px;
+            display: flex;
+            justify-content: space-between;
+            /* 로고를 오른쪽으로 정렬 */
+            align-items: center;
+            /* 세로 방향 가운데 정렬 */
         }
 
         .header {
@@ -263,10 +273,12 @@
                     <img src="home.png" alt="IconImage" class="iconimg">
                     <li><a href="index.html" class="nav-link text-danger">홈</a></li>
                     <li><a href="announcement.html" class="nav-link text-danger " style="color: #51040D;">공지</a></li>
+                    <li><a href="community.html" class="nav-link px-2 ">커뮤니티</a></li>
                     <li><a href="make.html" class="nav-link px-2 ">제작법</a></li>
                     <li><a href="discord.html" class="nav-link px-2 ">디스코드</a></li>
                     <li><a href="kakao.html" class="nav-link px-2 ">카카오톡</a></li>
                     <li><a href="server.html" class="nav-link px-2 ">서버</a></li>
+                    
                 </ul>
             </div>
             <div class="social-icons">
@@ -279,7 +291,7 @@
     </header>
     <hr>
 
-    <div class="container">
+    <div class="container container1">
         <!-- Table for displaying posts -->
         <table class="table" id="postsTable">
             <thead>
