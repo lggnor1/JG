@@ -135,9 +135,18 @@
     <style>
         @media (max-width: 768px) {
             .header {
-                background-size: cover; /* 배경 이미지가 전체를 채우도록 설정 */
-                background-position: center; /* 중앙 정렬 */
-                height: 400px; /* 모바일 화면에서 높이 조정 */
+                background-size: cover;
+                background-position: center;
+            }
+
+            a.nav-link {
+                color: #F17228;
+                font-size: 1.2em;
+                margin-right: 5px;
+            }
+            
+            .post-button-container {
+                margin-top: 20px;
             }
         }
 
@@ -157,22 +166,18 @@
             padding-bottom: 20px;
             margin-bottom: 0px;
             display: flex;
-            justify-content: space-between;
-            /* 로고를 오른쪽으로 정렬 */
+            flex-direction: column;
             align-items: center;
-            /* 세로 방향 가운데 정렬 */
         }
 
         .header {
-            background-size: cover; /* 배경 이미지가 전체를 채우도록 설정 */
+            background-size: cover;
             background-image: url('home.png');
-            background-position: center; /* 중앙 정렬 */
-            height: 730px;
-            width: 100%; /* 폭을 100%로 설정하여 화면에 맞게 조정 */
+            background-position: center;
+            height: 780px;
+            width: 100%;
             display: flex;
             flex-direction: column;
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .social-icons a {
